@@ -1,0 +1,49 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "rules": {
+      "@typescript-eslint/type-annotation-spacing": ["error", {
+        "after": true
+      }],
+      "comma-dangle": [
+        "error", {
+          "arrays": "always-multiline",
+          "objects": "always-multiline",
+          "imports": "always-multiline",
+          "exports": "always-multiline",
+          "functions": "always-multiline"
+        }
+      ],
+      "indent": ["error", 2],
+      "no-trailing-spaces": 2,
+      "object-curly-spacing": ["error", "always"],
+      "padding-line-between-statements": [
+        "error", {
+          "blankLine": "always",
+          "prev": "*",
+          "next": "return"
+        },{
+          "blankLine": "always",
+          "prev": "*",
+          "next": "block-like"
+        },{
+          "blankLine": "always",
+          "prev": ["const", "let", "var"],
+          "next": "*"
+        },{
+          "blankLine": "any",
+          "prev": ["const", "let", "var"],
+          "next": ["const", "let", "var"]
+        }
+      ],
+      "semi": ["error", "always"]
+    }
+  }
