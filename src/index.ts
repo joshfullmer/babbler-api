@@ -14,11 +14,14 @@ import { sequelize } from './db';
 import { User } from './db/models';
 import { HttpStatus } from './types/http';
 import { ValidationErrorItem } from 'sequelize/types';
+import bcrypt from "bcrypt";
 
 const app = express();
 
 app.use(bodyParser.json());
 
+//Look into migrations - as alter: true can be destructive
+//https://sequelize.org/master/manual/migrations.html
 sequelize.sync().then( async () => {
   // await User.create({username: 'tom'});
 
@@ -37,7 +40,9 @@ app.get('/users', async (req, res) => {
 //The common status code for get is 200
 
 app.post('/signup', async (req, res) => {
-  const { username } = req.body;
+  const { username, email, password } = req.body;
+
+  const hash = await bcrypt.hashSync(password, 10);
 
   if(!username) {
     res.status(HttpStatus.BAD_REQUEST).json({ error: "Username is required." });
@@ -46,7 +51,7 @@ app.post('/signup', async (req, res) => {
   }
 
   try {
-    const user = await User.create({ username }); //this is creating a whole new object, not pointing to the previous object
+    const user = await User.create({ username, email, password: hash }); //this is creating a whole new object, not pointing to the previous object
 
     res.status(HttpStatus.CREATED).json(user);
   } catch ({ errors }) {
@@ -55,11 +60,33 @@ app.post('/signup', async (req, res) => {
     });
 
     res.status(HttpStatus.CONFLICT).json({ errors: errorList });
-    console.log(errors);
-
   }
 });
-//The common status code for post is 201
 
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if(!email || !password) {
+    res.status(HttpStatus.UNAUTHORIZED).send();
+
+    return;
+  }
+  const { password: existingHash } = await User.findOne({ where: { email } }) || {};
+
+  if(!existingHash) {
+    res.status(HttpStatus.UNAUTHORIZED).send();
+
+    return;
+  }
+
+  if(bcrypt.compareSync(password, existingHash)) {
+    // Passwords match
+    //return JWT for future requests
+    res.status(HttpStatus.ACCEPTED).json({ jwt: "" });
+  } else {
+    // Passwords don't match
+    res.status(HttpStatus.UNAUTHORIZED).send();
+  }
+});
 
 export default app;
